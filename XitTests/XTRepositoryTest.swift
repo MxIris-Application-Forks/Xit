@@ -348,8 +348,8 @@ class XTRepositoryTest: XTTest
     catch RepoError.alreadyWriting {
       XCTFail("\(name): write unexpectedly failed", file: file, line: line)
     }
-    catch {
-      XCTFail("\(name): unexpected exception", file: file, line: line)
+    catch let error {
+      XCTFail("\(name): unexpected exception \(error)", file: file, line: line)
     }
   }
   
@@ -465,8 +465,8 @@ class XTRepositoryTest: XTTest
     assertWriteAction(name: "checkout") {
       CheckOut(branch: masterBranch)
     }
-    assertWriteBool(name: "delete") {
-      repository.deleteBranch(testBranch2)
+    assertWriteSucceeds(name: "delete") {
+      try repository.deleteBranch(testBranch2)
     }
   }
   
