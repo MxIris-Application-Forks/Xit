@@ -1,6 +1,6 @@
 import AppKit
 
-@NSApplicationMain
+@NSApplicationMain @MainActor
 final class AppDelegate: NSObject
 {
   var openPanel: NSOpenPanel?
@@ -66,6 +66,7 @@ final class AppDelegate: NSObject
         .makeKeyAndOrderFront(nil)
   }
   
+  @MainActor
   func activeWindowController() -> XTWindowController?
   {
     guard let controller = NSApp.mainWindow?.windowController

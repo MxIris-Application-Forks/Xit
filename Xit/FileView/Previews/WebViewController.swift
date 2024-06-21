@@ -152,7 +152,15 @@ class WebViewController: NSViewController
     setDocumentProperty("--\(name)", value: color.cssRGB)
   }
   
-  func webMessage(_ params: [String: Any])
+  nonisolated func webMessage(_ params: [String: Any])
+  {
+    guard let action = params["action"] as? String
+    else { return }
+
+    webMessage(action: action, sha: params["sha"] as? String, index: params["index"] as? Int)
+  }
+
+  nonisolated func webMessage(action: String, sha: String?, index: Int?)
   {
     // override
   }
@@ -224,17 +232,20 @@ extension WebViewController: WrappingVariable
 
 extension WebViewController: WKNavigationDelegate
 {
-  func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!)
+  nonisolated func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!)
   {
-    if let scrollView = webView.enclosingScrollView {
-      scrollView.hasHorizontalScroller = false
-      scrollView.horizontalScrollElasticity = .none
-      scrollView.backgroundColor = NSColor(deviceWhite: 0.8, alpha: 1.0)
+    DispatchQueue.main.async {
+      [self] in
+      if let scrollView = webView.enclosingScrollView {
+        scrollView.hasHorizontalScroller = false
+        scrollView.horizontalScrollElasticity = .none
+        scrollView.backgroundColor = NSColor(deviceWhite: 0.8, alpha: 1.0)
+      }
+
+      tabWidth = savedTabWidth
+      wrapping = savedWrapping ?? defaults.wrapping
+      updateFont()
+      updateColors()
     }
-    
-    tabWidth = savedTabWidth
-    wrapping = savedWrapping ?? defaults.wrapping
-    updateFont()
-    updateColors()
   }
 }

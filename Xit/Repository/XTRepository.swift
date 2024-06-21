@@ -2,6 +2,7 @@ import Foundation
 import Combine
 import os
 
+nonisolated(unsafe)
 let repoLogger = Logger(subsystem: Bundle.main.bundleIdentifier!,
                         category: "repo")
 
@@ -16,7 +17,7 @@ public final class XTRepository: BasicRepository, RepoConfiguring
   let gitRepo: OpaquePointer
   @objc public let repoURL: URL
   let gitRunner: CLIRunner
-  let mutex = Mutex()
+  let mutex = NSRecursiveLock()
   var refsIndex = [String: [String]]()
 
   let currentBranchSubject = CurrentValueSubject<String?, Never>(nil)

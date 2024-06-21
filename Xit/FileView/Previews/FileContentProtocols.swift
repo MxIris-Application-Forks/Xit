@@ -30,16 +30,19 @@ struct FileSelection: Equatable
   }
 }
 
+@MainActor
 protocol WhitespaceVariable: AnyObject
 {
   var whitespace: WhitespaceSetting { get set }
 }
 
+@MainActor
 protocol TabWidthVariable: AnyObject
 {
   var tabWidth: UInt { get set }
 }
 
+@MainActor
 protocol ContextVariable: AnyObject
 {
   var contextLines: UInt { get set }
@@ -47,7 +50,7 @@ protocol ContextVariable: AnyObject
 
 enum TextWrapping: RawRepresentable, CaseIterable
 {
-  static var allCases: [TextWrapping] = [
+  static let allCases: [TextWrapping] = [
     .windowWidth,
     .columns(80),
     .none,
@@ -117,6 +120,7 @@ extension TextWrapping: Equatable
   }
 }
 
+@MainActor
 protocol WrappingVariable: AnyObject
 {
   var wrapping: TextWrapping { get set }
