@@ -11,8 +11,10 @@ public typealias FullRepository =
 
 public protocol BasicRepository
 {
-  var controller: (any RepositoryController)? { get set }
+  var controller: (any RepositoryController)? { get }
 }
+
+public typealias ProgressValue = (current: Float, total: Float)
 
 public protocol RepositoryPublishing
 {
@@ -23,6 +25,10 @@ public protocol RepositoryPublishing
   var refLogPublisher: AnyPublisher<Void, Never> { get }
   var refsPublisher: AnyPublisher<Void, Never> { get }
   var stashPublisher: AnyPublisher<Void, Never> { get }
+  
+  var progressPublisher: AnyPublisher<ProgressValue, Never> { get }
+  
+  func post(progress: Float, total: Float)
 
   /// Published value is the paths that changed this time.
   var workspacePublisher: AnyPublisher<[String], Never> { get }
