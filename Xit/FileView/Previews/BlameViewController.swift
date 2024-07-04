@@ -13,12 +13,12 @@ final class BlameViewController: WebViewController, RepositoryWindowViewControll
     var commitColors = [String: NSColor]()
     var lastHue = 120
     
-    init(firstOID: any OID)
+    init(firstOID: GitOID)
     {
       _ = color(for: firstOID)
     }
     
-    func color(for oid: any OID) -> NSColor
+    func color(for oid: GitOID) -> NSColor
     {
       if let color = commitColors[oid.sha] {
         return color
@@ -114,7 +114,7 @@ final class BlameViewController: WebViewController, RepositoryWindowViewControll
     
     var htmlLines = [String]()
     let lines = text.lineComponents()
-    let selectOID = selection.oidToSelect as? GitOID
+    let selectOID = selection.target.oid
     let currentOID = selectOID ?? GitOID.zero()
     let dateFormatter = DateFormatter()
     let coloring = CommitColoring(firstOID: currentOID)
@@ -123,7 +123,7 @@ final class BlameViewController: WebViewController, RepositoryWindowViewControll
     dateFormatter.dateStyle = .short
     
     for hunk in blame.hunks {
-      let finalOID = hunk.finalLine.oid as! GitOID
+      let finalOID = hunk.finalLine.oid
       var hunkColor = coloring.color(for: finalOID)
       let jumpButton = finalOID == currentOID ? "" : HTML.jumpButton(finalOID.sha)
 
@@ -216,17 +216,18 @@ extension BlameViewController: FileContentLoading
             let text = String(data: data, encoding: .utf8) ??
                        String(data: data, encoding: .utf16)
       else {
-        self.notAvailable()
+        Task { @MainActor in self.notAvailable() }
         return
       }
       
-      Thread.performOnMainThread {
+      Task {
+        @MainActor [self] in
         self.spinner.isHidden = false
         self.spinner.startAnimation(nil)
         self.clear()
+        self.loadBlame(text: text, path: selection[0].path,
+                       selection: selection[0].repoSelection, fileList: fileList)
       }
-      self.loadBlame(text: text, path: selection[0].path,
-                     selection: selection[0].repoSelection, fileList: fileList)
     }
   }
 }

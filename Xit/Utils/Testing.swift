@@ -8,7 +8,8 @@ enum Testing
     case standard, tempEmpty, tempAccounts
   }
 
-  static var defaults: Defaults = .standard
+  nonisolated(unsafe) // only set in initialize()
+  private(set) static var defaults: Defaults = .standard
 
   static let tempAccountsData: [Account] = [
     .init(type: .gitHub, user: "This guy",
@@ -26,7 +27,7 @@ enum Testing
   {
     var defaultsOption = false
 
-    for arg in CommandLine.arguments {
+    for arg in ProcessInfo.processInfo.arguments {
       if arg == "--defaults" {
         defaultsOption = true
       }

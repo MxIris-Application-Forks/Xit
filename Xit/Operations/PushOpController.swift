@@ -22,7 +22,7 @@ final class PushOpController: PasswordOpController
   func progressCallback(progress: PushTransferProgress) -> Bool
   {
     guard !canceled
-    else { return true }
+    else { return false }
 
     Task {
       @MainActor in
@@ -30,7 +30,7 @@ final class PushOpController: PasswordOpController
           progress: Float(progress.current),
           total: Float(progress.total))
     }
-    return false
+    return true
   }
 
   override func start() throws
@@ -137,11 +137,12 @@ final class PushOpController: PasswordOpController
       
       self.push(branches: [currentBranch], remote: remote, then: {
         // This is now on the repo queue
-        DispatchQueue.main.async {
-          if sheetController.setTrackingBranch,
-             let remoteName = remote.name {
-            currentBranch.trackingBranchName = remoteName +/
-                                               currentBranch.strippedName
+        if let remoteName = remote.name {
+          DispatchQueue.main.async {
+            if sheetController.setTrackingBranch {
+              currentBranch.trackingBranchName = remoteName +/
+              currentBranch.strippedName
+            }
           }
         }
       })
@@ -165,25 +166,25 @@ final class PushOpController: PasswordOpController
   
   func push(branches: [any LocalBranch],
             remote: any Remote,
-            then callback: (() -> Void)? = nil)
+            then callback: (@Sendable () -> Void)? = nil)
   {
+    guard let repository = self.repository
+    else { return }
+
+    if let url = remote.pushURL ?? remote.url {
+      self.setKeychainInfo(from: url)
+    }
+
     tryRepoOperation {
-      guard let repository = self.repository
-      else { return }
       let callbacks = RemoteCallbacks(passwordBlock: self.getPassword,
                                       downloadProgress: nil,
                                       uploadProgress: self.progressCallback)
-      
-      if let url = remote.pushURL ?? remote.url {
-        self.setKeychainInfo(from: url)
-      }
 
       try repository.push(branches: branches,
                           remote: remote,
                           callbacks: callbacks)
       callback?()
-      self.windowController?.repoController.refsChanged()
-      self.ended()
+      self.refsChangedAndEnded()
     }
   }
 }

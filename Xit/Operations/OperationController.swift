@@ -49,7 +49,16 @@ class OperationController
     successActions.removeAll()
     windowController?.operationEnded(self)
   }
-  
+
+  nonisolated func refsChangedAndEnded()
+  {
+    Task {
+      @MainActor in
+      self.windowController?.repoController.refsChanged()
+      self.ended()
+    }
+  }
+
   func onSuccess(_ action: @escaping () -> Void)
   {
     successActions.append(action)
@@ -65,7 +74,7 @@ class OperationController
   
   /// Executes the given block on the repository queue, handling errors and
   /// updating status.
-  func tryRepoOperation(block: @escaping (() throws -> Void))
+  func tryRepoOperation(block: @escaping (@Sendable () throws -> Void))
   {
     windowController?.repoController.queue.executeOffMainThread {
       [weak self] in
@@ -76,29 +85,29 @@ class OperationController
         guard let self = self
         else { return }
         
-        defer {
-          Task { @MainActor in
+        Task { @MainActor in
+          defer {
             self.ended(result: .failure)
           }
-        }
-        
-        switch error {
-          
-          case let repoError as RepoError:
-            self.showFailureError(self.repoErrorMessage(for: repoError).rawValue)
-          
-          case let nsError as NSError where self.shoudReport(error: nsError):
-            var message = error.localizedDescription
-            
-            if let gitError = git_error_last() {
-              let errorString = String(cString: gitError.pointee.message)
-              
-              message.append(" \(errorString)")
-            }
-            self.showFailureError(message)
-          
-          default:
-            break
+
+          switch error {
+
+            case let repoError as RepoError:
+              self.showFailureError(self.repoErrorMessage(for: repoError).rawValue)
+
+            case let nsError as NSError where self.shoudReport(error: nsError):
+              var message = error.localizedDescription
+
+              if let gitError = git_error_last() {
+                let errorString = String(cString: gitError.pointee.message)
+
+                message.append(" \(errorString)")
+              }
+              self.showFailureError(message)
+
+            default:
+              break
+          }
         }
       }
     }
