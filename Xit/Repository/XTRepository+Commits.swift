@@ -2,11 +2,6 @@ import Foundation
 
 extension XTRepository: CommitStorage
 {
-  public func oid(forSHA sha: String) -> GitOID?
-  {
-    return GitOID(sha: sha)
-  }
-  
   public func commit(forSHA sha: String) -> GitCommit?
   {
     return GitCommit(sha: sha, repository: gitRepo)
@@ -47,7 +42,7 @@ extension XTRepository: CommitStorage
     }
   }
   
-  public func walker() -> (any RevWalk)?
+  public func walker() -> GitRevWalk?
   {
     GitRevWalk(repository: gitRepo)
   }
@@ -172,7 +167,7 @@ extension XTRepository: CommitReferencing
   {
     return try writing {
       guard let refName = LocalBranchRefName(name),
-            let branch = localBranch(named: refName) as? GitLocalBranch
+            let branch = localBranch(named: refName)
       else { throw RepoError.notFound }
 
       try RepoError.throwIfGitError(git_branch_delete(branch.branchRef))

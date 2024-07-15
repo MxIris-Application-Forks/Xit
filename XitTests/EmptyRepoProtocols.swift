@@ -7,45 +7,50 @@ import Foundation
 /// instances represent null or empty values.
 
 protocol EmptyBasicRepository: BasicRepository {}
-
 extension EmptyBasicRepository
 {
   var controller: (any RepositoryController)? { get { nil } set {} }
 }
 
-protocol EmptyBranching: Branching {}
 
+protocol EmptyBranching: Branching {}
 extension EmptyBranching
 {
   var currentBranch: String? { nil }
-  var localBranches: AnySequence<any LocalBranch>
-  { .init(Array<NullLocalBranch>()) }
-  var remoteBranches: AnySequence<any RemoteBranch>
-  { .init(Array<NullRemoteBranch>()) }
+  var localBranches: AnySequence<LocalBranch>
+  { .init(Array<LocalBranch>()) }
+  var remoteBranches: AnySequence<RemoteBranch>
+  { .init(Array<RemoteBranch>()) }
 
   /// Creates a branch at the given target ref
   func createBranch(named name: String,
-                    target: String) throws -> (any LocalBranch)? { nil }
+                    target: String) throws -> LocalBranch? { nil }
   func rename(branch: String, to: String) throws {}
-  func localBranch(named name: LocalBranchRefName) -> (any LocalBranch)? { nil }
-  func remoteBranch(named name: String) -> (any RemoteBranch)? { nil }
-  func localBranch(tracking remoteBranch: any RemoteBranch) -> (any LocalBranch)?
-  { nil }
-  func localTrackingBranch(forBranch branch: RemoteBranchRefName) -> (any LocalBranch)?
+  func localBranch(named name: LocalBranchRefName) -> LocalBranch? { nil }
+  func remoteBranch(named name: String) -> RemoteBranch? { nil }
+  func remoteBranch(named name: String, remote: String) -> RemoteBranch? { nil }
+  func localBranch(tracking remoteBranch: RemoteBranch) -> LocalBranch? { nil }
+  func localTrackingBranch(forBranch branch: RemoteBranchRefName) -> LocalBranch?
   { nil }
   func reset(toCommit target: any Commit, mode: ResetMode) throws {}
 }
-class NullBranching: EmptyBranching {}
+class NullBranching: EmptyBranching
+{
+  typealias LocalBranch = NullLocalBranch
+  typealias RemoteBranch = NullRemoteBranch
+}
+
 
 class NullLocalBranch: LocalBranch
 {
   var trackingBranchName: String? { get { nil } set {} }
-  var trackingBranch: (any RemoteBranch)? { nil }
+  var trackingBranch: NullRemoteBranch? { nil }
   var name: String { "refs/heads/branch" }
   var shortName: String { "branch" }
   var oid: GitOID? { nil }
   var targetCommit: (any Commit)? { nil }
 }
+
 
 class NullRemoteBranch: RemoteBranch
 {
@@ -56,37 +61,47 @@ class NullRemoteBranch: RemoteBranch
   var remoteName: String? { nil }
 }
 
-protocol EmptyCommitStorage: CommitStorage {}
 
+protocol EmptyCommitStorage: CommitStorage {}
 extension EmptyCommitStorage
 {
   func oid(forSHA sha: String) -> GitOID?  { nil }
-  func commit(forSHA sha: String) -> GitCommit? { nil }
-  func commit(forOID oid: GitOID) -> GitCommit? { nil }
+  func commit(forSHA sha: String) -> Commit? { nil }
+  func commit(forOID oid: GitOID) -> Commit? { nil }
 
   func commit(message: String, amend: Bool) throws {}
 
-  func walker() -> (any RevWalk)? { nil }
+  func walker() -> RevWalk? { nil }
 }
-class NullCommitStorage: EmptyCommitStorage {}
+class NullCommitStorage: EmptyCommitStorage
+{
+  typealias Commit = NullCommit
+  typealias RevWalk = NullRevWalk
+}
+
+
+protocol EmptyRevWalk: RevWalk {}
+extension EmptyRevWalk
+{
+  func reset() {}
+  func setSorting(_ sort: RevWalkSorting) {}
+  func push(oid: GitOID) {}
+  func next() -> GitOID? { nil }
+}
+class NullRevWalk: EmptyRevWalk {}
+
 
 protocol EmptyCommitReferencing: CommitReferencing {}
-
 extension EmptyCommitReferencing
 {
   var headRef: String? { nil }
-  var currentBranch: String? { nil }
 
   func oid(forRef: String) -> GitOID? { nil }
   func sha(forRef: String) -> String? { nil }
   func tags() throws -> [Tag] { [] }
-  func graphBetween(localBranch: any LocalBranch,
-                    upstreamBranch: any RemoteBranch) -> (ahead: Int,
+  func graphBetween(localBranch: LocalBranch,
+                    upstreamBranch: RemoteBranch) -> (ahead: Int,
                                                           behind: Int)?
-  { nil }
-
-  func localBranch(named name: LocalBranchRefName) -> (any LocalBranch)? { nil }
-  func remoteBranch(named name: String, remote: String) -> (any RemoteBranch)?
   { nil }
 
   func reference(named name: String) -> (any Reference)? { nil }
@@ -106,7 +121,10 @@ class NullCommitReferencing: EmptyCommitReferencing
   typealias Commit = NullCommit
   typealias Tag = NullTag
   typealias Tree = NullTree
+  typealias LocalBranch = NullLocalBranch
+  typealias RemoteBranch = NullRemoteBranch
 }
+
 
 class NullCommit: Commit
 {
@@ -123,6 +141,7 @@ class NullCommit: Commit
 
   func getTrailers() -> [(String, [String])] { [] }
 }
+
 
 class NullTree: Tree
 {
@@ -148,6 +167,7 @@ class NullTree: Tree
   func entry(at index: Int) -> Entry? { nil }
 }
 
+
 class NullTag: Tag
 {
   var name: String = ""
@@ -158,6 +178,7 @@ class NullTag: Tag
   let type: TagType = .annotated
   let isSigned: Bool = false
 }
+
 
 struct NullBlob: Blob
 {
@@ -171,8 +192,8 @@ struct NullBlob: Blob
   }
 }
 
-protocol EmptyFileStatusDetection: FileStatusDetection {}
 
+protocol EmptyFileStatusDetection: FileStatusDetection {}
 extension EmptyFileStatusDetection
 {
   func changes(for oid: GitOID, parent parentOID: GitOID?) -> [FileChange]
@@ -197,8 +218,8 @@ extension EmptyFileStatusDetection
 }
 class NullFileStatusDetection: EmptyFileStatusDetection {}
 
-protocol EmptyFileDiffing: FileDiffing {}
 
+protocol EmptyFileDiffing: FileDiffing {}
 extension EmptyFileDiffing
 {
   func diffMaker(forFile file: String,
@@ -210,15 +231,26 @@ extension EmptyFileDiffing
 
   func blame(for path: String,
              from startOID: GitOID?,
-             to endOID: GitOID?) -> (any Blame)? { nil }
+             to endOID: GitOID?) -> Blame? { nil }
   func blame(for path: String,
              data fromData: Data?,
-             to endOID: GitOID?) -> (any Blame)? { nil }
+             to endOID: GitOID?) -> Blame? { nil }
 }
-class NullFileDiffing: EmptyFileDiffing {}
+class NullFileDiffing: EmptyFileDiffing
+{
+  typealias Blame = NullBlame
+}
+
+
+protocol EmptyBlame: Blame {}
+extension EmptyBlame
+{
+  var hunks: [BlameHunk] { [] }
+}
+struct NullBlame: EmptyBlame{}
+
 
 protocol EmptyFileContents: FileContents {}
-
 extension EmptyFileContents
 {
   var repoURL: URL { .init(fileURLWithPath: "/") }
@@ -235,8 +267,8 @@ class NullFileContents: EmptyFileContents
   typealias Blob = NullBlob
 }
 
-protocol EmptyFileStaging: FileStaging {}
 
+protocol EmptyFileStaging: FileStaging {}
 extension EmptyFileStaging
 {
   var index: (any StagingIndex)? { nil }
@@ -252,8 +284,8 @@ extension EmptyFileStaging
 }
 class NullFileStaging: EmptyFileStaging {}
 
-protocol EmptyStashing: Stashing {}
 
+protocol EmptyStashing: Stashing {}
 extension EmptyStashing
 {
   var stashes: AnyCollection<any Stash> { .init(Array<GitStash>()) }
@@ -275,8 +307,8 @@ class NullStashing: EmptyStashing
   typealias Commit = NullCommit
 }
 
-protocol EmptyStash: Stash {}
 
+protocol EmptyStash: Stash {}
 extension EmptyStash
 {
   var message: String? { nil }
@@ -291,33 +323,80 @@ extension EmptyStash
 }
 class NullStash: EmptyStash {}
 
-protocol EmptyRemoteManagement: RemoteManagement {}
 
+protocol EmptyRemoteManagement: RemoteManagement {}
 extension EmptyRemoteManagement
 {
   func remoteNames() -> [String] { [] }
-  func remote(named name: String) -> (any Remote)? { nil }
+  func remote(named name: String) -> Remote? { nil }
   func addRemote(named name: String, url: URL) throws {}
   func deleteRemote(named name: String) throws {}
-}
-class NullRemoteManagement: EmptyRemoteManagement {}
-
-public protocol EmptyRemoteCommunication: RemoteCommunication {}
-
-extension EmptyRemoteCommunication
-{
-  func push(branches: [any LocalBranch],
-            remote: any Remote,
+  func push(branches: [LocalBranch],
+            remote: Remote,
             callbacks: RemoteCallbacks) throws {}
-  func fetch(remote: any Remote, options: FetchOptions) throws {}
+  func fetch(remote: Remote, options: FetchOptions) throws {}
   func pull(branch: any Branch,
-            remote: any Remote,
+            remote: Remote,
             options: FetchOptions) throws {}
 }
-class NullRemoteCommunication: EmptyRemoteCommunication {}
+class NullRemoteManagement: EmptyRemoteManagement {
+  typealias LocalBranch = NullLocalBranch
+  typealias Remote = NullRemote
+}
+
+
+protocol EmptyRemote: Remote {}
+extension EmptyRemote
+{
+  var name: String? { nil }
+  var urlString: String? { nil }
+  var pushURLString: String? { nil }
+  var refSpecs: AnyCollection<RefSpec> { .init([]) }
+
+  func rename(_ name: String) throws {}
+  func updateURLString(_ URLString: String?) throws {}
+  func updatePushURLString(_ URLString: String?) throws {}
+  func withConnection<T>(direction: Xit.RemoteConnectionDirection,
+                         callbacks: Xit.RemoteCallbacks,
+                         action: (any Xit.ConnectedRemote) throws -> T)
+    throws -> T
+  { try action(NullConnectedRemote()) }
+}
+class NullRemote: EmptyRemote
+{
+
+  typealias RefSpec = NullRefSpec
+}
+
+
+protocol EmptyConnectedRemote: ConnectedRemote {}
+extension EmptyConnectedRemote
+{
+  var defaultBranch: String? { nil }
+
+  func referenceAdvertisements() throws -> [RemoteHead] { [] }
+}
+final class NullConnectedRemote: EmptyConnectedRemote {}
+
+
+protocol EmptyRefSpec: RefSpec {}
+extension EmptyRefSpec
+{
+  var source: String { "" }
+  var destination: String { "" }
+  var stringValue: String { "" }
+  var force: Bool { false }
+  var direction: RemoteConnectionDirection { .fetch }
+
+  func sourceMatches(refName: String) -> Bool { false }
+  func destinationMatches(refName: String) -> Bool { false }
+  func transformToTarget(name: String) -> String? { nil }
+  func transformToSource(name: String) -> String? { nil }
+}
+struct NullRefSpec: EmptyRefSpec {}
+
 
 protocol EmptyTagging: Tagging {}
-
 extension EmptyTagging
 {
   func createTag(name: String, targetOID: GitOID, message: String?) throws {}
@@ -326,8 +405,8 @@ extension EmptyTagging
 }
 class NullTagging: EmptyTagging {}
 
-protocol EmptyWorkspace: Workspace {}
 
+protocol EmptyWorkspace: Workspace {}
 extension EmptyWorkspace
 {
   func checkOut(branch: String) throws {}

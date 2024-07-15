@@ -6,8 +6,8 @@ import Combine
 public typealias FullRepository =
     BasicRepository & Branching & CommitStorage & CommitReferencing & FileDiffing &
     FileContents & FileStaging & FileStatusDetection & Merging &
-    RemoteCommunication & RemoteManagement & RepoConfiguring & Stashing &
-    SubmoduleManagement & Tagging & WritingManagement & Workspace
+    RemoteManagement & RepoConfiguring & Stashing & SubmoduleManagement &
+    Tagging & WritingManagement & Workspace
 
 public protocol BasicRepository
 {
@@ -65,14 +65,14 @@ public protocol Cloning
 public protocol CommitStorage: AnyObject
 {
   associatedtype Commit: Xit.Commit
+  associatedtype RevWalk: Xit.RevWalk
 
-  func oid(forSHA sha: String) -> GitOID?
   func commit(forSHA sha: String) -> Commit?
   func commit(forOID oid: GitOID) -> Commit?
 
   func commit(message: String, amend: Bool) throws
   
-  func walker() -> (any RevWalk)?
+  func walker() -> RevWalk?
 }
 
 
@@ -81,20 +81,17 @@ public protocol CommitReferencing: AnyObject
   associatedtype Commit: Xit.Commit
   associatedtype Tag: Xit.Tag
   associatedtype Tree: Xit.Tree
+  associatedtype LocalBranch: Xit.LocalBranch
+  associatedtype RemoteBranch: Xit.RemoteBranch
 
   var headRef: String? { get }
-  var currentBranch: String? { get }
-  
+
   func oid(forRef: String) -> GitOID?
   func sha(forRef: String) -> String?
   func tags() throws -> [Tag]
-  func graphBetween(localBranch: any LocalBranch,
-                    upstreamBranch: any RemoteBranch) -> (ahead: Int,
-                                                          behind: Int)?
-  
-  func localBranch(named refName: LocalBranchRefName) -> (any LocalBranch)?
-  func remoteBranch(named name: String, remote: String) -> (any RemoteBranch)?
-  
+  func graphBetween(localBranch: LocalBranch,
+                    upstreamBranch: RemoteBranch) -> (ahead: Int, behind: Int)?
+
   func reference(named name: String) -> (any Reference)?
   func refs(at oid: GitOID) -> [String]
   func allRefs() -> [String]
@@ -111,8 +108,6 @@ public protocol CommitReferencing: AnyObject
 
 extension CommitReferencing
 {
-  var currentBranchRefName: LocalBranchRefName?
-  { currentBranch.flatMap { .init($0) } }
   var headReference: (any Reference)? { reference(named: "HEAD") }
   var headSHA: String? { headRef.flatMap { self.sha(forRef: $0) } }
   var headOID: GitOID? { headRef.flatMap { self.oid(forRef: $0) } }
@@ -121,6 +116,12 @@ extension CommitReferencing
 extension CommitReferencing where Self: CommitStorage
 {
   var headCommit: Commit? { headOID.flatMap { commit(forOID: $0) } }
+}
+
+extension CommitReferencing where Self: Branching
+{
+  var currentBranchRefName: LocalBranchRefName?
+  { currentBranch.flatMap { .init($0) } }
 }
 
 public protocol FileStatusDetection: AnyObject
@@ -160,6 +161,8 @@ extension FileStatusDetection
 
 public protocol FileDiffing: AnyObject
 {
+  associatedtype Blame: Xit.Blame
+
   func diffMaker(forFile file: String,
                  commitOID: GitOID,
                  parentOID: GitOID?) -> PatchMaker.PatchResult?
@@ -169,10 +172,10 @@ public protocol FileDiffing: AnyObject
 
   func blame(for path: String,
              from startOID: GitOID?,
-             to endOID: GitOID?) -> (any Blame)?
+             to endOID: GitOID?) -> Blame?
   func blame(for path: String,
              data fromData: Data?,
-             to endOID: GitOID?) -> (any Blame)?
+             to endOID: GitOID?) -> Blame?
 }
 
 public protocol FileContents: AnyObject
@@ -245,15 +248,37 @@ public protocol Stashing: AnyObject
 
 public protocol RemoteManagement: AnyObject
 {
+  associatedtype LocalBranch: Xit.LocalBranch
+  associatedtype Remote: Xit.Remote
+
   func remoteNames() -> [String]
-  func remote(named name: String) -> (any Remote)?
+  func remote(named name: String) -> Remote?
   func addRemote(named name: String, url: URL) throws
   func deleteRemote(named name: String) throws
+
+  /// Pushes an update for the given branch.
+  /// - parameter branches: Local branches to push; must have a tracking branch set
+  /// - parameter remote: Target remote to push to
+  /// - parameter callbacks: Password and progress callbacks
+  func push(branches: [LocalBranch],
+            remote: Remote,
+            callbacks: RemoteCallbacks) throws
+
+  /// Dowloads updated refs and commits from the remote.
+  func fetch(remote: Remote, options: FetchOptions) throws
+
+  /// Initiates pulling (fetching and merging) the given branch.
+  /// - parameter branch: Either the local branch or the remote tracking branch.
+  /// - parameter remote: The remote to pull from.
+  /// - parameter options: Options for the fetch operation.
+  func pull(branch: any Branch,
+            remote: Remote,
+            options: FetchOptions) throws
 }
 
 extension RemoteManagement
 {
-  func remotes() -> [any Remote]
+  func remotes() -> [Remote]
   {
     return remoteNames().compactMap { remote(named: $0) }
   }
@@ -320,28 +345,6 @@ public struct PushTransferProgress: Sendable
   let bytes: size_t
 }
 
-public protocol RemoteCommunication: AnyObject
-{
-  /// Pushes an update for the given branch.
-  /// - parameter branches: Local branches to push; must have a tracking branch set
-  /// - parameter remote: Target remote to push to
-  /// - parameter callbacks: Password and progress callbacks
-  func push(branches: [any LocalBranch],
-            remote: any Remote,
-            callbacks: RemoteCallbacks) throws
-  
-  /// Dowloads updated refs and commits from the remote.
-  func fetch(remote: any Remote, options: FetchOptions) throws
-  
-  /// Initiates pulling (fetching and merging) the given branch.
-  /// - parameter branch: Either the local branch or the remote tracking branch.
-  /// - parameter remote: The remote to pull from.
-  /// - parameter options: Options for the fetch operation.
-  func pull(branch: any Branch,
-            remote: any Remote,
-            options: FetchOptions) throws
-}
-
 public protocol SubmoduleManagement: AnyObject
 {
   func submodules() -> [any Submodule]
@@ -350,23 +353,44 @@ public protocol SubmoduleManagement: AnyObject
 
 public protocol Branching: AnyObject
 {
+  associatedtype LocalBranch: Xit.LocalBranch
+  associatedtype RemoteBranch: Xit.RemoteBranch
+
   /// Returns the current checked out branch, or nil if in a detached head state
   var currentBranch: String? { get }
-  var localBranches: AnySequence<any LocalBranch> { get }
-  var remoteBranches: AnySequence<any RemoteBranch> { get }
+  var localBranches: AnySequence<LocalBranch> { get }
+  var remoteBranches: AnySequence<RemoteBranch> { get }
   
   /// Creates a branch at the given target ref
   func createBranch(named name: String,
-                    target: String) throws -> (any LocalBranch)?
+                    target: String) throws -> LocalBranch?
   func rename(branch: String, to: String) throws
-  func localBranch(named refName: LocalBranchRefName) -> (any LocalBranch)?
-  func remoteBranch(named name: String) -> (any RemoteBranch)?
-  func localBranch(tracking remoteBranch: any RemoteBranch) -> (any LocalBranch)?
-  func localTrackingBranch(forBranch branch: RemoteBranchRefName)
-    -> (any LocalBranch)?
-  
+  func localBranch(named refName: LocalBranchRefName) -> LocalBranch?
+  func remoteBranch(named name: String) -> RemoteBranch?
+  func remoteBranch(named name: String, remote: String) -> RemoteBranch?
+  func localBranch(tracking remoteBranch: RemoteBranch) -> LocalBranch?
+  func localTrackingBranch(forBranch branch: RemoteBranchRefName) -> LocalBranch?
+
   /// Resets the current branch to the specified commit
   func reset(toCommit target: any Commit, mode: ResetMode) throws
+}
+
+extension Branching
+{
+  /// Returns the branch itself if it is a local branch, or a branch tracking
+  /// it if it is a remote branch.
+  func localBranch(for branch: any Branch) -> LocalBranch?
+  {
+    if let local = branch as? LocalBranch {
+      return local
+    }
+    else if let remote = branch as? RemoteBranch {
+      return localBranch(tracking: remote)
+    }
+    else {
+      return nil
+    }
+  }
 }
 
 public protocol Merging: AnyObject
