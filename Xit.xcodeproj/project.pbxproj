@@ -140,7 +140,6 @@
 		C9120EE023EE04C00052387E /* ResetPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9120EDE23EE04C00052387E /* ResetPanelController.swift */; };
 		C9120EE123EE04C00052387E /* ResetPanelController.xib in Resources */ = {isa = PBXBuildFile; fileRef = C9120EDF23EE04C00052387E /* ResetPanelController.xib */; };
 		C91727B623689F500023DC57 /* ReadOnlyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91727B523689F500023DC57 /* ReadOnlyUITests.swift */; };
-		C919B9E526B09F4D007952FA /* LabeledField.swift in Sources */ = {isa = PBXBuildFile; fileRef = C919B9D326B09F4D007952FA /* LabeledField.swift */; };
 		C91E9A011D527A1300E128AC /* HistoryTableController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91E9A001D527A1300E128AC /* HistoryTableController.swift */; };
 		C91F34781D30656B005F9BDF /* Services.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91F34771D30656B005F9BDF /* Services.swift */; };
 		C923D6481D8CA56800C6B90B /* XTTagTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = C923D6471D8CA56800C6B90B /* XTTagTest.swift */; };
@@ -319,6 +318,7 @@
 		C9E602F82C1BAFD000326726 /* FileChange.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9E602F72C1BAFD000326726 /* FileChange.swift */; };
 		C9E602FA2C1BB02C00326726 /* FileChangeNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9E602F92C1BB02C00326726 /* FileChangeNode.swift */; };
 		C9E640121D1095C700192454 /* XTFileChangesModelTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9E640111D1095C700192454 /* XTFileChangesModelTest.swift */; };
+		C9E7DA3A2C82215F00B539E0 /* SwiftUIExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9E7DA392C82215F00B539E0 /* SwiftUIExtensions.swift */; };
 		C9E8815D1E95988700BFA7E5 /* XTRepository+MergePushPull.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9E8815C1E95988700BFA7E5 /* XTRepository+MergePushPull.swift */; };
 		C9E8816C1E983B6F00BFA7E5 /* XTRepositoryMergeTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9E8816B1E983B6F00BFA7E5 /* XTRepositoryMergeTest.swift */; };
 		C9E9A37D1D0B5706007BFABF /* XTWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9E9A37C1D0B5706007BFABF /* XTWindowController.swift */; };
@@ -522,7 +522,6 @@
 		C91727B323689F500023DC57 /* XitUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = XitUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C91727B523689F500023DC57 /* ReadOnlyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadOnlyUITests.swift; sourceTree = "<group>"; };
 		C91727B723689F500023DC57 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		C919B9D326B09F4D007952FA /* LabeledField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LabeledField.swift; sourceTree = "<group>"; };
 		C91E9A001D527A1300E128AC /* HistoryTableController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HistoryTableController.swift; sourceTree = "<group>"; };
 		C91F34771D30656B005F9BDF /* Services.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Services.swift; sourceTree = "<group>"; };
 		C923D6471D8CA56800C6B90B /* XTTagTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XTTagTest.swift; sourceTree = "<group>"; };
@@ -702,6 +701,7 @@
 		C9E602F72C1BAFD000326726 /* FileChange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileChange.swift; sourceTree = "<group>"; };
 		C9E602F92C1BB02C00326726 /* FileChangeNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileChangeNode.swift; sourceTree = "<group>"; };
 		C9E640111D1095C700192454 /* XTFileChangesModelTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XTFileChangesModelTest.swift; sourceTree = "<group>"; };
+		C9E7DA392C82215F00B539E0 /* SwiftUIExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIExtensions.swift; sourceTree = "<group>"; };
 		C9E8815C1E95988700BFA7E5 /* XTRepository+MergePushPull.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "XTRepository+MergePushPull.swift"; sourceTree = "<group>"; };
 		C9E8816B1E983B6F00BFA7E5 /* XTRepositoryMergeTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XTRepositoryMergeTest.swift; sourceTree = "<group>"; };
 		C9E9A37C1D0B5706007BFABF /* XTWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = XTWindowController.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
@@ -853,6 +853,7 @@
 				89D47942170894A200C04D89 /* NSAttributedString+XTExtensions.m */,
 				89009E322878CE52004A684B /* SiestaExtensions.swift */,
 				C97E31AF20BF271300E74D2F /* StringExtensions.swift */,
+				C9E7DA392C82215F00B539E0 /* SwiftUIExtensions.swift */,
 				C9F1B5DD2217247E00293305 /* ViewExtensions.swift */,
 			);
 			path = Extensions;
@@ -863,7 +864,6 @@
 			children = (
 				C9C3013A269E4A7100EBBBC8 /* Environment.swift */,
 				89BA11E528BE432200A7999A /* HostingTitlebarController.swift */,
-				C919B9D326B09F4D007952FA /* LabeledField.swift */,
 				C9C30136269E09EF00EBBBC8 /* PathControl.swift */,
 				8983E1A6266596BD0075370C /* PathField.swift */,
 				89BA11E128BD576D00A7999A /* SearchField.swift */,
@@ -1389,7 +1389,7 @@
 				BuildIndependentTargetsInParallel = YES;
 				CLASSPREFIX = XT;
 				LastSwiftUpdateCheck = 1110;
-				LastUpgradeCheck = 1510;
+				LastUpgradeCheck = 1540;
 				ORGANIZATIONNAME = "";
 				TargetAttributes = {
 					C3FA46FB13D0F8E200AC4F9B = {
@@ -1552,7 +1552,6 @@
 				C91E9A011D527A1300E128AC /* HistoryTableController.swift in Sources */,
 				C959CDD71F859BFE00C1E282 /* XTWindowController+TouchBar.swift in Sources */,
 				C9A0544E228A03D6002BFFF5 /* SidebarPRManager.swift in Sources */,
-				C919B9E526B09F4D007952FA /* LabeledField.swift in Sources */,
 				C957B84B1D2D53040040F858 /* SheetController.swift in Sources */,
 				C947367C1DF079DB000E3A05 /* SideBarOutlineView.swift in Sources */,
 				89C927941D43B23B0074F71A /* XTRepository.swift in Sources */,
@@ -1636,6 +1635,7 @@
 				89BA11E928C4E26900A7999A /* HistorySearchType.swift in Sources */,
 				891260E8285D395900053528 /* ConfigValueWrappers.swift in Sources */,
 				C98CAD841F9520D0005DB419 /* GitDiffHunk.swift in Sources */,
+				C9E7DA3A2C82215F00B539E0 /* SwiftUIExtensions.swift in Sources */,
 				C96B22F022DF84C200DA219F /* GitVersionedOptions.swift in Sources */,
 				C900463C21120F3200706029 /* BitbucketServerAPI.swift in Sources */,
 				89DAE199267EAD61005AEA8F /* CloneData.swift in Sources */,
@@ -1878,6 +1878,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3DB98C8423E0928A0039B454 /* Shared.xcconfig */;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
@@ -2010,6 +2011,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3DB98C8423E0928A0039B454 /* Shared.xcconfig */;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
@@ -2067,6 +2069,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3DB98C8423E0928A0039B454 /* Shared.xcconfig */;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
