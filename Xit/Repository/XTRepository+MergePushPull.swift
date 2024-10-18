@@ -2,13 +2,13 @@ import Foundation
 
 extension XTRepository: RemoteManagement
 {
-  public func push(branches: [GitLocalBranch],
+  public func push(branches: [LocalBranchRefName],
                    remote: GitRemote,
                    callbacks: RemoteCallbacks) throws
   {
     try performWriting {
       var result: Int32
-      let names = branches.map { $0.referenceName.fullPath }
+      let names = branches.map { $0.fullPath }
 
       result = names.withGitStringArray {
         (refspecs) in
@@ -259,7 +259,7 @@ extension XTRepository: Merging
       
       guard let currentBranchName = currentBranch,
             let targetBranch = GitLocalBranch(repository: gitRepo,
-                                              name: currentBranchName,
+                                              name: currentBranchName.name,
                                               config: config)
       else { throw RepoError.detachedHead }
       guard let targetCommit = targetBranch.targetCommit as? GitCommit,

@@ -106,17 +106,17 @@ extension XTRepository: CommitReferencing
   }
   
   /// Returns a list of all ref names.
-  public func allRefs() -> [String]
+  public func allRefs() -> [GeneralRefName]
   {
     var stringArray = git_strarray()
     guard git_reference_list(&stringArray, gitRepo) == 0
     else { return [] }
     defer { git_strarray_free(&stringArray) }
     
-    return stringArray.compactMap { $0 }
+    return stringArray.compactMap { $0.flatMap { .init(rawValue: $0) } }
   }
   
-  public var headRef: String?
+  public var headRefName: (any ReferenceName)?
   {
     objc_sync_enter(self)
     defer {
@@ -128,11 +128,15 @@ extension XTRepository: CommitReferencing
     return cachedHeadRef
   }
   
-  func calculateCurrentBranch() -> String?
+  func calculateCurrentBranch() -> LocalBranchRefName?
   {
-    return headReference?.resolve()?.name.droppingPrefix(RefPrefixes.heads)
+    guard let name = headReference?.resolve()?.name
+    else {
+      return nil
+    }
+    return name as? LocalBranchRefName
   }
-  
+
   func hasHeadReference() -> Bool
   {
     return headReference != nil
@@ -143,15 +147,15 @@ extension XTRepository: CommitReferencing
     return hasHeadReference() ? "HEAD" : SHA.emptyTree.rawValue
   }
   
-  public func sha(forRef ref: String) -> SHA?
+  public func sha(forRef ref: any ReferenceName) -> SHA?
   {
     return oid(forRef: ref)?.sha
   }
   
-  public func oid(forRef ref: String) -> GitOID?
+  public func oid(forRef ref: any ReferenceName) -> GitOID?
   {
     guard let object = try? OpaquePointer.from({
-            git_revparse_single(&$0, gitRepo, ref)
+            git_revparse_single(&$0, gitRepo, ref.fullPath)
           })
     else { return nil }
     defer {

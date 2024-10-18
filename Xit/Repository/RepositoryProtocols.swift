@@ -90,18 +90,18 @@ public protocol CommitReferencing: AnyObject
   associatedtype LocalBranch: Xit.LocalBranch
   associatedtype RemoteBranch: Xit.RemoteBranch
 
-  var headRef: String? { get }
+  var headRefName: (any ReferenceName)? { get }
 
-  func oid(forRef: String) -> GitOID?
-  func sha(forRef: String) -> SHA?
+  func oid(forRef: any ReferenceName) -> GitOID?
+  func sha(forRef: any ReferenceName) -> SHA?
   func tags() throws -> [Tag]
   func graphBetween(localBranch: LocalBranch,
                     upstreamBranch: RemoteBranch) -> (ahead: Int, behind: Int)?
 
   func reference(named name: String) -> (any Reference)?
   func refs(at oid: GitOID) -> [String]
-  func allRefs() -> [String]
-  
+  func allRefs() -> [GeneralRefName]
+
   func rebuildRefsIndex()
   
   /// Creates a commit with the given content.
@@ -115,19 +115,13 @@ public protocol CommitReferencing: AnyObject
 extension CommitReferencing
 {
   var headReference: (any Reference)? { reference(named: "HEAD") }
-  var headSHA: SHA? { headRef.flatMap { self.sha(forRef: $0) } }
-  var headOID: GitOID? { headRef.flatMap { self.oid(forRef: $0) } }
+  var headSHA: SHA? { headRefName.flatMap { self.sha(forRef: $0) } }
+  var headOID: GitOID? { headRefName.flatMap { self.oid(forRef: $0) } }
 }
 
 extension CommitReferencing where Self: CommitStorage
 {
   var headCommit: Commit? { headOID.flatMap { commit(forOID: $0) } }
-}
-
-extension CommitReferencing where Self: Branching
-{
-  var currentBranchRefName: LocalBranchRefName?
-  { currentBranch.flatMap { .init($0) } }
 }
 
 @Faked
@@ -200,7 +194,7 @@ public protocol FileContents: AnyObject
   var repoURL: URL { get }
   
   func isTextFile(_ path: String, context: FileContext) -> Bool
-  func fileBlob(ref: String, path: String) -> Blob?
+  func fileBlob(ref: any ReferenceName, path: String) -> Blob?
   func stagedBlob(file: String) -> Blob?
   func contentsOfFile(path: String, at commit: any Commit) -> Data?
   func contentsOfStagedFile(path: String) -> Data?
@@ -273,7 +267,6 @@ public protocol Stashing: AnyObject
 @Faked
 public protocol RemoteManagement: AnyObject
 {
-  associatedtype LocalBranch: Xit.LocalBranch
   associatedtype Remote: Xit.Remote
 
   func remoteNames() -> [String]
@@ -285,7 +278,7 @@ public protocol RemoteManagement: AnyObject
   /// - parameter branches: Local branches to push; must have a tracking branch set
   /// - parameter remote: Target remote to push to
   /// - parameter callbacks: Password and progress callbacks
-  func push(branches: [LocalBranch],
+  func push(branches: [LocalBranchRefName],
             remote: Remote,
             callbacks: RemoteCallbacks) throws
 
@@ -379,12 +372,13 @@ public protocol SubmoduleManagement: AnyObject
 }
 
 @Faked
-public protocol Branching: AnyObject {
+public protocol Branching: AnyObject
+{
   associatedtype LocalBranch: Xit.LocalBranch
   associatedtype RemoteBranch: Xit.RemoteBranch
 
   /// Returns the current checked out branch, or nil if in a detached head state
-  var currentBranch: String? { get }
+  var currentBranch: LocalBranchRefName? { get }
   var localBranches: AnySequence<LocalBranch> { get }
   var remoteBranches: AnySequence<RemoteBranch> { get }
   

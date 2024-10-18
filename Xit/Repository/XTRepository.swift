@@ -17,13 +17,13 @@ public final class XTRepository: BasicRepository, RepoConfiguring
   let mutex = NSRecursiveLock()
   var refsIndex = [SHA: [String]]()
 
-  let currentBranchSubject = CurrentValueSubject<String?, Never>(nil)
+  let currentBranchSubject = CurrentValueSubject<LocalBranchRefName?, Never>(nil)
   
   public weak var controller: RepositoryController? = nil
   
   fileprivate(set) public var isWriting = false
 
-  fileprivate(set) var cachedHeadRef: String?
+  fileprivate(set) var cachedHeadRef: (any ReferenceName)?
   fileprivate(set) var cachedHeadSHA: SHA?
   var cachedStagedChanges: [FileChange]?
   {
